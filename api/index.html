@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Todo App Vercel</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
+    input { padding: 8px; width: 70%; }
+    button { padding: 8px; }
+    li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+  <h1>📝 Lista de Tarefas</h1>
+
+  <input type="text" id="taskInput" placeholder="Digite uma tarefa" />
+  <button onclick="addTask()">Adicionar</button>
+
+  <ul id="taskList"></ul>
+
+<script>
+async function loadTasks() {
+  const res = await fetch("/api/tasks");
+  const data = await res.json();
+
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  data.forEach(task => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${task.text}
+      <button onclick="deleteTask(${task.id})">❌</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+async function addTask() {
+  const input = document.getElementById("taskInput");
+
+  await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: input.value })
+  });
+
+  input.value = "";
+  loadTasks();
+}
+
+async function deleteTask(id) {
+  await fetch(`/api/tasks?id=${id}`, {
+    method: "DELETE"
+  });
+
+  loadTasks();
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
